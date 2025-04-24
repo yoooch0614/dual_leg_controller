@@ -8,14 +8,14 @@
         args="RF LF" output="screen">
   </node>
   
-  <!-- USB1に接続された脚（右中と左中） -->
+  <!-- USB1に接続された脚（左中と左後） -->
   <node name="dual_leg_controller_usb1" pkg="dual_leg_controller" type="dual_leg_controller_node" 
-        args="RM LM" output="screen">
+        args="LM LB" output="screen">
   </node>
   
-  <!-- USB2に接続された脚（右後と左後） -->
+  <!-- USB2に接続された脚（右後と右中） -->
   <node name="dual_leg_controller_usb2" pkg="dual_leg_controller" type="dual_leg_controller_node" 
-        args="RR LR" output="screen">
+        args="RB RM" output="screen">
   </node>
   
 </launch>
