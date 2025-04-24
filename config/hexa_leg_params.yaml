@@ -1,0 +1,50 @@
+# 六脚ロボットのパラメータ設定
+
+# Dynamixelの基本設定
+dynamixel:
+  baud_rate: 57600  
+  protocol_version: 2.0
+
+  # USBデバイスのパス設定
+  devices:
+    RF: "/dev/ttyUSB0"  # 右前脚用デバイス
+    RM: "/dev/ttyUSB1"  # 右中脚用デバイス
+    RR: "/dev/ttyUSB2"  # 右後脚用デバイス
+    LF: "/dev/ttyUSB0"  # 左前脚用デバイス（右前脚と同じデバイス）
+    LM: "/dev/ttyUSB1"  # 左中脚用デバイス（右中脚と同じデバイス）
+    LR: "/dev/ttyUSB2"  # 左後脚用デバイス（右後脚と同じデバイス）
+
+  # 各脚のモーターID [coxa, femur, tibia]
+  motor_ids:
+    RF: [1, 2, 3]     # 右前脚
+    RM: [21, 22, 23]  # 右中脚
+    RR: [41, 42, 43]  # 右後脚
+    LF: [11, 12, 13]  # 左前脚
+    LM: [31, 32, 33]  # 左中脚
+    LR: [51, 52, 53]  # 左後脚
+
+# 制御パラメータ（全脚共通）
+control:
+  position_limit:
+    max: 4095
+    min: 0
+  velocity_limit: 1023
+  update_rate: 50.0   # Hz
+
+# リンクパラメータ（全脚共通）
+leg_geometry:
+  coxa_length: 25.0    # mm
+  femur_length: 105.0  # mm
+  tibia_length: 105.0  # mm
+
+# ゼロ点オフセット（全脚共通）
+joint_zero_position:
+  coxa_offset: 90.0    # degrees
+  femur_offset: 90.0   # degrees
+  tibia_offset: 0.0    # degrees
+
+# 回転方向設定（全脚共通）
+joint_direction:
+  coxa_direction: 1
+  femur_direction: 1
+  tibia_direction: -1
