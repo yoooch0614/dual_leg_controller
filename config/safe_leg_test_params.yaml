@@ -1,0 +1,46 @@
+# 安全な単脚歩行テスト用パラメータ設定
+
+# 安全範囲設定（RF脚想定）
+safety:
+  # ステップパラメータの制限
+  step_height_min: 5.0      # 最小ステップ高さ [mm]
+  step_height_max: 40.0     # 最大ステップ高さ [mm]  
+  step_length_min: 10.0     # 最小ステップ長さ [mm]
+  step_length_max: 60.0     # 最大ステップ長さ [mm]
+  
+  # タイミング制限
+  cycle_time_min: 1.0       # 最小歩行周期 [s]（高速すぎを防止）
+  cycle_time_max: 8.0       # 最大歩行周期 [s]（遅すぎを防止）
+  
+  # 位置制限（RF脚の安全可動範囲）
+  x_limit_min: 80.0         # X軸最小値 [mm]（体に近すぎない）
+  x_limit_max: 200.0        # X軸最大値 [mm]（伸びすぎない）
+  y_limit_min: -50.0        # Y軸最小値 [mm]（左に行きすぎない）
+  y_limit_max: 50.0         # Y軸最大値 [mm]（右に行きすぎない）
+  z_limit_min: -120.0       # Z軸最小値 [mm]（地面より下に行かない）
+  z_limit_max: -50.0        # Z軸最大値 [mm]（高く上がりすぎない）
+
+# ホームポジション（安全な初期位置）
+home_position:
+  x: 140.0                  # 前方140mm
+  y: 0.0                    # 中央
+  z: -90.0                  # 地面から90mm上
+
+# 初期歩行パラメータ（保守的な値）
+initial_walk_params:
+  step_height: 15.0         # 初期ステップ高さ [mm]
+  step_length: 25.0         # 初期ステップ長さ [mm]
+  cycle_time: 3.0           # 初期歩行周期 [s]（ゆっくり）
+  speed_multiplier: 0.5     # 初期速度倍率（半分の速度）
+
+# デバッグ・ログ設定
+debug:
+  enable_position_logging: true     # 位置ログ出力
+  enable_safety_warnings: true     # 安全警告出力
+  log_interval: 2.0                # ログ出力間隔 [s]
+
+# 緊急停止設定
+emergency:
+  auto_home_on_error: true         # エラー時自動でホームに戻る
+  max_position_error: 10.0         # 最大位置誤差 [mm]
+  timeout_duration: 5.0            # タイムアウト時間 [s]

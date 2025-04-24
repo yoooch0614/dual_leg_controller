@@ -1,0 +1,123 @@
+<!-- 6脚足先動作監視システム用launchファイル -->
+<!-- launch/hexapod_foot_monitor.launch -->
+<launch>
+  <!-- 引数定義 -->
+  <arg name="enable_visualization" default="true"/>
+  <arg name="enable_data_logging" default="true"/>
+  <arg name="enable_safety_monitoring" default="true"/>
+  <arg name="log_directory" default="/tmp/hexapod_logs"/>
+  
+  <!-- 監視システム設定パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexapod_foot_monitor_params.yaml"/>
+  
+  <!-- 基本的な6脚制御システムの起動 -->
+  <!-- USB0に接続された脚（右前と左前） -->
+  <node name="dual_leg_controller_usb0" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RF LF" 
+        output="screen" respawn="false">
+  </node>
+  
+  <!-- USB1に接続された脚（左中と左後） -->
+  <node name="dual_leg_controller_usb1" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="LM LB" 
+        output="screen" respawn="false">
+  </node>
+  
+  <!-- USB2に接続された脚（右後と右中） -->
+  <node name="dual_leg_controller_usb2" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RB RM" 
+        output="screen" respawn="false">
+  </node>
+  
+  <!-- メイン足先監視システム -->
+  <node name="hexapod_foot_monitor" pkg="dual_leg_controller" 
+        type="hexapod_foot_monitor.py" output="screen" launch-prefix="xterm -e">
+    <param name="enable_visualization" value="$(arg enable_visualization)"/>
+    <param name="enable_data_logging" value="$(arg enable_data_logging)"/>
+    <param name="log_directory" value="$(arg log_directory)"/>
+    
+    <!-- 監視設定 -->
+    <param name="update_rate" value="10.0"/>
+    <param name="trajectory_length" value="100"/>
+    <param name="velocity_history_length" value="50"/>
+    
+    <!-- 異常検出設定 -->
+    <param name="enable_anomaly_detection" value="true"/>
+    <param name="anomaly_alert_sound" value="true"/>
+  </node>
+  
+  <!-- 安全監視ノード -->
+  <node name="hexapod_safety_monitor" pkg="dual_leg_controller" 
+        type="leg_safety_monitor.py" output="screen" if="$(arg enable_safety_monitoring)">
+    <param name="monitor_legs" value="RF,LF,LM,LB,RB,RM"/>
+    <param name="emergency_stop_enabled" value="true"/>
+    <param name="safety_log_file" value="$(arg log_directory)/safety_log.txt"/>
+  </node>
+  
+  <!-- 歩行パターン分析ノード -->
+  <node name="gait_pattern_analyzer" pkg="dual_leg_controller" 
+        type="gait_pattern_analyzer.py" output="screen">
+    <param name="analysis_window_size" value="5.0"/>  <!-- 5秒間のデータで分析 -->
+    <param name="tripod_coordination_threshold" value="0.7"/>
+    <param name="step_regularity_threshold" value="0.8"/>
+  </node>
+  
+  <!-- データ記録ノード（オプション） -->
+  <node name="data_logger" pkg="dual_leg_controller" 
+        type="hexapod_data_logger.py" output="screen" if="$(arg enable_data_logging)">
+    <param name="log_directory" value="$(arg log_directory)"/>
+    <param name="log_format" value="rosbag"/>  <!-- rosbag または csv -->
+    <param name="auto_save_interval" value="300.0"/>  <!-- 5分毎に自動保存 -->
+  </node>
+  
+  <!-- リアルタイム性能監視ノード -->
+  <node name="performance_monitor" pkg="dual_leg_controller" 
+        type="performance_monitor.py" output="screen">
+    <param name="monitor_cpu_usage" value="true"/>
+    <param name="monitor_memory_usage" value="true"/>
+    <param name="monitor_network_latency" value="true"/>
+    <param name="performance_log_interval" value="10.0"/>
+  </node>
+  
+  <!-- Web GUI監視インターフェース（オプション） -->
+  <node name="web_monitor_server" pkg="dual_leg_controller" 
+        type="web_monitor_server.py" output="screen" if="$(arg enable_visualization)">
+    <param name="port" value="8080"/>
+    <param name="host" value="0.0.0.0"/>
+    <param name="enable_live_stream" value="true"/>
+  </node>
+  
+  <!-- ROSトピック監視 -->
+  <node name="topic_monitor" pkg="dual_leg_controller" 
+        type="topic_monitor.py" output="screen">
+    <param name="monitor_topics" value="/asterisk/leg/*/command/foot_position,/asterisk/leg/*/state/foot_position"/>
+    <param name="check_frequency" value="1.0"/>
+    <param name="timeout_threshold" value="5.0"/>
+  </node>
+  
+  <!-- 診断システム -->
+  <node name="hexapod_diagnostics" pkg="dual_leg_controller" 
+        type="hexapod_diagnostics.py" output="screen">
+    <param name="diagnostic_rate" value="1.0"/>
+    <param name="check_motor_health" value="true"/>
+    <param name="check_communication" value="true"/>
+    <param name="check_power_status" value="true"/>
+  </node>
+  
+  <!-- RViz可視化（3D表示） -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" if="$(arg enable_visualization)"
+        args="-d $(find dual_leg_controller)/config/hexapod_foot_monitor.rviz">
+  </node>
+  
+  <!-- rqt_multiplot（グラフ表示） -->
+  <node name="rqt_multiplot" pkg="rqt_multiplot" type="rqt_multiplot" 
+        output="screen" if="$(arg enable_visualization)"
+        args="--multiplot-config $(find dual_leg_controller)/config/foot_monitor_plots.xml">
+  </node>
+  
+  <!-- ログディレクトリの作成 -->
+  <node name="create_log_dir" pkg="dual_leg_controller" type="create_directories.sh" 
+        args="$(arg log_directory)" output="screen" if="$(arg enable_data_logging)">
+  </node>
+  
+</launch>
