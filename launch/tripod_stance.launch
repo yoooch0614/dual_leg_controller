@@ -1,0 +1,15 @@
+<launch>
+  <!-- パラメータの設定 -->
+  <param name="default_height" value="0.0" />
+  <param name="raised_height" value="-30.0" />
+  <param name="leg_x" value="150.0" />
+  <param name="leg_y" value="150.0" />
+  <param name="update_interval" value="0.02" />
+  <param name="toggle_interval" value="1.0" />
+  
+  <!-- 手動トライポッドスタンスノードの起動 -->
+  <node name="manual_tripod_stance" pkg="dual_leg_controller" type="manual_tripod_stance" output="screen" />
+  
+  <!-- 各脚のコントローラを起動（これは既存のものを使用） -->
+  <include file="$(find dual_leg_controller)/launch/hexa_leg_controller.launch" />
+</launch>

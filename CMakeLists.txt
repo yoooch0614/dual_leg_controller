@@ -73,3 +73,23 @@ install(DIRECTORY config/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
   FILES_MATCHING PATTERN "*.yaml"
 )
+
+# manual_tripod_stanceノードのビルド
+add_executable(manual_tripod_stance src/manual_tripod_stance.cpp)
+target_link_libraries(manual_tripod_stance ${catkin_LIBRARIES})
+add_dependencies(manual_tripod_stance ${catkin_EXPORTED_TARGETS})
+
+# インストール設定
+install(TARGETS manual_tripod_stance
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING PATTERN "*.launch"
+)
