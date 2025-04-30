@@ -93,3 +93,12 @@ install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   FILES_MATCHING PATTERN "*.launch"
 )
+# initial_position_setterノードのビルド
+add_executable(initial_position_setter src/initial_position_setter.cpp)
+target_link_libraries(initial_position_setter ${catkin_LIBRARIES})
+add_dependencies(initial_position_setter ${catkin_EXPORTED_TARGETS})
+
+# インストール設定
+install(TARGETS initial_position_setter
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
