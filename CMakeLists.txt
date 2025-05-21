@@ -49,8 +49,28 @@ add_dependencies(${PROJECT_NAME}_node
   ${catkin_EXPORTED_TARGETS}
 )
 
+
+# ライブラリの作成
+add_library(${PROJECT_NAME}
+  src/dual_leg_controller.cpp
+  src/dynamixel_sync_controller.cpp
+)
+
+# ライブラリの依存関係
+add_dependencies(${PROJECT_NAME}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+# ライブラリのリンク
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+
 # リンクの設定
 target_link_libraries(${PROJECT_NAME}_node
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
@@ -74,31 +94,9 @@ install(DIRECTORY config/
   FILES_MATCHING PATTERN "*.yaml"
 )
 
-# manual_tripod_stanceノードのビルド
-add_executable(manual_tripod_stance src/manual_tripod_stance.cpp)
-target_link_libraries(manual_tripod_stance ${catkin_LIBRARIES})
-add_dependencies(manual_tripod_stance ${catkin_EXPORTED_TARGETS})
-
-# インストール設定
-install(TARGETS manual_tripod_stance
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
-
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-  FILES_MATCHING PATTERN "*.launch"
-)
-# initial_position_setterノードのビルド
-add_executable(initial_position_setter src/initial_position_setter.cpp)
-target_link_libraries(initial_position_setter ${catkin_LIBRARIES})
-add_dependencies(initial_position_setter ${catkin_EXPORTED_TARGETS})
-
-# インストール設定
-install(TARGETS initial_position_setter
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# インストール設定に以下を追加
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
