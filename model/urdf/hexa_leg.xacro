@@ -112,26 +112,87 @@
                 <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             </collision>
+            <!-- 座標系確認用の軸表示を追加 -->
+            <visual name="debug_x_axis">
+                <origin xyz="0.02 0 0" rpy="0 ${radians(90)} 0"/>
+                <geometry>
+                    <cylinder radius="0.002" length="0.04"/>
+                </geometry>
+                <material name="debug_red">
+                    <color rgba="1.0 0.0 0.0 1.0"/>
+                </material>
+            </visual>
+            
+            <visual name="debug_y_axis">
+                <origin xyz="0 0.02 0" rpy="${radians(90)} 0 0"/>
+                <geometry>
+                    <cylinder radius="0.002" length="0.04"/>
+                </geometry>
+                <material name="debug_green">
+                    <color rgba="0.0 1.0 0.0 1.0"/>
+                </material>
+            </visual>
+            
+            <visual name="debug_z_axis">
+                <origin xyz="0 0 0.02" rpy="0 0 0"/>
+                <geometry>
+                    <cylinder radius="0.002" length="0.04"/>
+                </geometry>
+                <material name="debug_blue">
+                    <color rgba="0.0 0.0 1.0 1.0"/>
+                </material>
+            </visual>
         </link>
 
         <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
         <link name="limb${limb_id}_foot_tip">
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
-                <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
                 <mass value="0.0001"/>
                 <inertia ixx="0.00001" iyy="0.00001" izz="0.00001" ixy="0.0" iyz="0.0" ixz="0.0"/>
             </inertial>
             
-            <!-- 小さな視覚マーカー（オプション） -->
-            <visual>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+            <!-- X軸（前方向）- 赤色 -->
+            <visual name="x_axis">
+                <origin xyz="0.01 0 0" rpy="0 ${radians(90)} 0"/>
                 <geometry>
-                    <!-- とても小さな球体マーカー -->
-                    <sphere radius="0.003"/>
+                    <cylinder radius="0.001" length="0.02"/>
                 </geometry>
                 <material name="red">
                     <color rgba="1.0 0.0 0.0 1.0"/>
+                </material>
+            </visual>
+            
+            <!-- Y軸（右方向）- 緑色 -->
+            <visual name="y_axis">
+                <origin xyz="0 0.01 0" rpy="${radians(90)} 0 0"/>
+                <geometry>
+                    <cylinder radius="0.001" length="0.02"/>
+                </geometry>
+                <material name="green">
+                    <color rgba="0.0 1.0 0.0 1.0"/>
+                </material>
+            </visual>
+            
+            <!-- Z軸（上方向）- 青色 -->
+            <visual name="z_axis">
+                <origin xyz="0 0 0.01" rpy="0 0 0"/>
+                <geometry>
+                    <cylinder radius="0.001" length="0.02"/>
+                </geometry>
+                <material name="blue">
+                    <color rgba="0.0 0.0 1.0 1.0"/>
+                </material>
+            </visual>
+            
+            <!-- 座標原点 - 白色 -->
+            <visual name="origin">
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <sphere radius="0.003"/>
+                </geometry>
+                <material name="white">
+                    <color rgba="1.0 1.0 1.0 1.0"/>
                 </material>
             </visual>
         </link>
@@ -171,10 +232,11 @@
         <!-- tibiaリンクと脚先を接続する固定ジョイント -->
         <joint name="limb${limb_id}_foot_joint" type="fixed">
             <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-            <origin xyz="-0.103 0.0205 -0.00205" rpy="0 0 0"/>
+            <origin xyz="-0.103 0.0205 -0.00205" rpy="${radians(-90)} 0 ${radians(-90)}"/>
             <parent link="limb${limb_id}_link6"/>
             <child link="limb${limb_id}_foot_tip"/>
         </joint>
+
 
         <!-- トランスミッション -->
     <transmission name="trans${limb_id}_1">

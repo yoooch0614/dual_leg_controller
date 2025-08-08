@@ -136,24 +136,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb0_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -188,7 +244,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb0_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb0_link6"/>
     <child link="limb0_foot_tip"/>
   </joint>
@@ -319,24 +375,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb1_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -371,7 +483,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb1_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb1_link6"/>
     <child link="limb1_foot_tip"/>
   </joint>
@@ -502,24 +614,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb2_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -554,7 +722,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb2_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb2_link6"/>
     <child link="limb2_foot_tip"/>
   </joint>
@@ -685,24 +853,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb3_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -737,7 +961,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb3_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb3_link6"/>
     <child link="limb3_foot_tip"/>
   </joint>
@@ -868,24 +1092,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb4_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -920,7 +1200,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb4_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb4_link6"/>
     <child link="limb4_foot_tip"/>
   </joint>
@@ -1051,24 +1331,80 @@
         <mesh filename="package://dual_leg_controller/model/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
+    <!-- 座標系確認用の軸表示を追加 -->
+    <visual name="debug_x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.02 0 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <visual name="debug_z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.002"/>
+      </geometry>
+      <material name="debug_blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
   </link>
   <!-- 脚先（foot_tip）を示す非常に小さなリンク -->
   <link name="limb5_foot_tip">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- 非常に軽い質量（物理シミュレーションにほとんど影響しない） -->
       <mass value="0.0001"/>
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
     </inertial>
-    <!-- 小さな視覚マーカー（オプション） -->
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+    <!-- X軸（前方向）- 赤色 -->
+    <visual name="x_axis">
+      <origin rpy="0 1.5707963267948966 0" xyz="0.01 0 0"/>
       <geometry>
-        <!-- とても小さな球体マーカー -->
-        <sphere radius="0.003"/>
+        <cylinder length="0.02" radius="0.001"/>
       </geometry>
       <material name="red">
         <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Y軸（右方向）- 緑色 -->
+    <visual name="y_axis">
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0.01 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <!-- Z軸（上方向）- 青色 -->
+    <visual name="z_axis">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+      </material>
+    </visual>
+    <!-- 座標原点 - 白色 -->
+    <visual name="origin">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.003"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
       </material>
     </visual>
   </link>
@@ -1103,7 +1439,7 @@
   <!-- tibiaリンクと脚先を接続する固定ジョイント -->
   <joint name="limb5_foot_joint" type="fixed">
     <!-- tibiaのSTLモデルの先端までの距離を設定 -->
-    <origin rpy="0 0 0" xyz="-0.103 0.0205 -0.00205"/>
+    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="-0.103 0.0205 -0.00205"/>
     <parent link="limb5_link6"/>
     <child link="limb5_foot_tip"/>
   </joint>
