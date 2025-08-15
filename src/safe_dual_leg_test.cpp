@@ -15,10 +15,10 @@ private:
     
     // 検証済みの歩行パラメータ
     struct WalkParams {
-        double step_height = 15.0;       // 検証済み値
-        double step_length = 25.0;       // 検証済み値  
-        double cycle_time = 2.0;         // 検証済み値
-        double speed_multiplier = 0.5;   // 検証済み値
+        double step_height = 17.0;       // 検証済み値
+        double step_length = 60.0;       // 検証済み値  
+        double cycle_time = 1.2;         // 検証済み値
+        double speed_multiplier = 1.0;   // 検証済み値
         double phase_offset = 0.5;       // RF-LF間の位相差（180度）
     } walk_params_;
     
