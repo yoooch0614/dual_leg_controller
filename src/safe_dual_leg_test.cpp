@@ -62,8 +62,8 @@ public:
         double lf_angle = 60.0 * M_PI / 180.0;
         legs_["LF"] = {
             "LF",
-            (body_radius + leg_reach) * cos(lf_angle),  // X: 70mm (60度方向の自然な位置)
-            (body_radius + leg_reach) * sin(lf_angle),  // Y: 121mm
+            (body_radius + leg_reach) ,  // X: 70mm (60度方向の自然な位置)
+            0.0,  // Y: 121mm
             -90.0,
             true
         };
