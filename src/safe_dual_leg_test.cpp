@@ -45,25 +45,24 @@ public:
     SafeDualLegTest() : nh_(""), is_walking_(false), is_enabled_(false), 
                        current_time_(0.0), last_key_(0), keyboard_initialized_(false) {
         
-        // 実際の6脚ロボット配置に合わせた脚設定
+        // 実際の6脚ロボット配置：各脚の自然な初期位置
         double body_radius = 95.0;  // cylinder_radius from URDF
         double leg_reach = 45.0;    // 脚の伸び代
         
-        // RF脚: 0度位置（右前）
-        double rf_angle = 0.0;
+        // RF脚: 0度位置（右前）- 自然な伸び方向
         legs_["RF"] = {
             "RF", 
-            (body_radius + leg_reach) * cos(rf_angle),  // X: 140mm
-            (body_radius + leg_reach) * sin(rf_angle),  // Y: 0mm
+            (body_radius + leg_reach),  // X: 140mm (前方向)
+            0.0,                        // Y: 0mm 
             -90.0, 
             true
         };
         
-        // LF脚: 60度位置（左前）
-        double lf_angle = 60.0 * M_PI / 180.0;  // 60度をラジアンに変換
+        // LF脚: 60度位置（左前）- 自然な伸び方向
+        double lf_angle = 60.0 * M_PI / 180.0;
         legs_["LF"] = {
             "LF",
-            (body_radius + leg_reach) * cos(lf_angle),  // X: 70mm
+            (body_radius + leg_reach) * cos(lf_angle),  // X: 70mm (60度方向の自然な位置)
             (body_radius + leg_reach) * sin(lf_angle),  // Y: 121mm
             -90.0,
             true
@@ -292,33 +291,27 @@ public:
             double phase = fmod(current_time_ + leg_phase_offset * effective_cycle_time, 
                               effective_cycle_time) / effective_cycle_time;
             
-            // 各脚の角度を取得
-            double leg_angle = 0.0;
-            if (leg_id == "RF") leg_angle = 0.0;
-            if (leg_id == "LF") leg_angle = 60.0 * M_PI / 180.0;
-            
-            // 歩行方向（ボディ前方を基準とした前後移動）
-            double walk_dir_x = cos(leg_angle);  // 脚の方向でのX成分
-            double walk_dir_y = sin(leg_angle);  // 脚の方向でのY成分
-            
             dual_leg_controller::LegPosition cmd;
             
+            // 重要：歩行方向は全て前後方向（X軸方向）に統一
+            // 各脚のリンク構造は変えずに、足先のみ前後移動
+            
             if (phase < 0.5) {
-                // スタンス期（接地期）
+                // スタンス期（接地期）- 足先が後方移動
                 double stance_ratio = phase / 0.5;
                 double step_offset = walk_params_.step_length/2.0 - walk_params_.step_length * stance_ratio;
                 
-                cmd.x = config.home_x + step_offset * walk_dir_x;
-                cmd.y = config.home_y + step_offset * walk_dir_y;
+                cmd.x = config.home_x + step_offset;  // X方向（前後）のみ移動
+                cmd.y = config.home_y;                // Y座標は初期位置を維持
                 cmd.z = config.home_z;
             } else {
-                // スイング期（遊脚期）
+                // スイング期（遊脚期）- 足先が前方移動
                 double swing_ratio = (phase - 0.5) / 0.5;
                 double swing_angle = swing_ratio * M_PI;
                 double step_offset = -walk_params_.step_length/2.0 + walk_params_.step_length * swing_ratio;
                 
-                cmd.x = config.home_x + step_offset * walk_dir_x;
-                cmd.y = config.home_y + step_offset * walk_dir_y;
+                cmd.x = config.home_x + step_offset;  // X方向（前後）のみ移動
+                cmd.y = config.home_y;                // Y座標は初期位置を維持
                 cmd.z = config.home_z + walk_params_.step_height * sin(swing_angle);
             }
             
@@ -331,7 +324,7 @@ public:
             double lf_phase = fmod(current_time_ + walk_params_.phase_offset * effective_cycle_time, 
                                  effective_cycle_time) / effective_cycle_time;
             ROS_INFO("Phases - RF: %.2f, LF: %.2f", rf_phase, lf_phase);
-            ROS_INFO("RF pos: [%.1f, %.1f], LF pos: [%.1f, %.1f]", 
+            ROS_INFO("RF home: [%.1f, %.1f], LF home: [%.1f, %.1f]", 
                      legs_["RF"].home_x, legs_["RF"].home_y,
                      legs_["LF"].home_x, legs_["LF"].home_y);
         }
