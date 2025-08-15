@@ -20,12 +20,14 @@ private:
         double cycle_time = 1.2;         // 検証済み値
         double speed_multiplier = 1.0;   // 検証済み値
         double phase_offset = 0.5;       // RF-LF間の位相差（180度）
+        double forward_speed = 20.0;     // 前進速度 [mm/s]
     } walk_params_;
     
     // 脚の基準位置
     struct LegConfig {
         std::string leg_id;
-        double home_x, home_y, home_z;
+        double home_x, home_y, home_z;    // 初期ホーム位置
+        double current_x, current_y;      // 現在のホーム位置（前進により更新）
         bool active;
     };
     
@@ -36,6 +38,7 @@ private:
     bool is_enabled_;
     double current_time_;
     char last_key_;
+    double total_distance_walked_;        // 歩行した総距離
     
     // キーボード入力用
     struct termios old_tio_, new_tio_;
@@ -43,27 +46,30 @@ private:
 
 public:
     SafeDualLegTest() : nh_(""), is_walking_(false), is_enabled_(false), 
-                       current_time_(0.0), last_key_(0), keyboard_initialized_(false) {
+                       current_time_(0.0), last_key_(0), keyboard_initialized_(false),
+                       total_distance_walked_(0.0) {
         
-        // 正しい脚配置：各脚とも前方向(X軸正方向)に足先を配置
-        // 脚の取り付け位置は異なるが、足先の方向は統一
+        // 正しい脚配置：各脚とも脚座標系で前方向に足先を配置
         
-        // RF脚: 0度位置に取り付け、前方向に伸ばす
+        // RF脚: 0度位置に取り付け、脚座標系で前方向に伸ばす
         legs_["RF"] = {
             "RF", 
-            140.0,  // X: 前方向140mm
+            140.0,  // X: 初期ホーム位置
             0.0,    // Y: 0mm 
             -90.0,  // Z: -90mm
+            140.0,  // current_x: 現在のホーム位置X
+            0.0,    // current_y: 現在のホーム位置Y
             true
         };
         
-        // LF脚: 60度位置に取り付けられているが、足先は前方向に配置
-        // （逆運動学により適切な関節角度が計算される）
+        // LF脚: 60度位置に取り付け、脚座標系で前方向に伸ばす
         legs_["LF"] = {
             "LF",
-            140.0,  // X: 前方向140mm（RF脚と同じ）
-            0.0,    // Y: 0mm（RF脚と同じ）
+            140.0,  // X: 初期ホーム位置（脚座標系）
+            0.0,    // Y: 0mm（脚座標系）
             -90.0,  // Z: -90mm
+            140.0,  // current_x: 現在のホーム位置X
+            0.0,    // current_y: 現在のホーム位置Y
             true
         };
         
@@ -117,16 +123,18 @@ public:
         ROS_INFO("Using optimized parameters from single leg test:");
         ROS_INFO("  Height: %.1fmm, Length: %.1fmm", walk_params_.step_height, walk_params_.step_length);
         ROS_INFO("  Cycle: %.1fs, Speed: x%.1f", walk_params_.cycle_time, walk_params_.speed_multiplier);
+        ROS_INFO("  Forward speed: %.1fmm/s", walk_params_.forward_speed);
         ROS_INFO("  Phase offset: %.1f (180 degrees)", walk_params_.phase_offset);
         ROS_INFO("");
         ROS_INFO("LEG CONFIGURATION:");
-        ROS_INFO("  RF leg: 0° mount, foot at (140, 0)");
-        ROS_INFO("  LF leg: 60° mount, foot at (140, 0) - IK will handle joint angles");
+        ROS_INFO("  Both legs use leg coordinate system (140, 0) as home");
+        ROS_INFO("  Robot will move forward by updating home positions");
         ROS_INFO("");
         ROS_INFO("CONTROLS:");
         ROS_INFO("  SPACE: Start/Continue walking (hold to walk)");
         ROS_INFO("  s: Stop walking");
         ROS_INFO("  h: Return to home position");
+        ROS_INFO("  r: Reset position to origin");
         ROS_INFO("  ESC/q: Emergency stop and exit");
         ROS_INFO("");
         ROS_INFO("ADVANCED:");
@@ -134,6 +142,7 @@ public:
         ROS_INFO("  3/4: Toggle LF leg on/off");
         ROS_INFO("  +/-: Adjust step height");
         ROS_INFO("  [/]: Adjust step length");
+        ROS_INFO("  f/v: Adjust forward speed");
         ROS_INFO("");
         ROS_INFO("Press 'h' to move to home position...");
     }
@@ -168,6 +177,10 @@ public:
                 
             case 'h':  // ホームポジション
                 moveToHome();
+                break;
+                
+            case 'r':  // 位置リセット
+                resetPosition();
                 break;
                 
             case 27:   // ESC
@@ -218,6 +231,17 @@ public:
                 printCurrentParams();
                 break;
                 
+            case 'f':
+                walk_params_.forward_speed += 5.0;
+                walk_params_.forward_speed = std::min(50.0, walk_params_.forward_speed);
+                printCurrentParams();
+                break;
+            case 'v':
+                walk_params_.forward_speed -= 5.0;
+                walk_params_.forward_speed = std::max(5.0, walk_params_.forward_speed);
+                printCurrentParams();
+                break;
+                
             default:
                 if (is_walking_) {
                     last_key_ = 0; // 歩行停止
@@ -227,9 +251,26 @@ public:
     }
     
     void printCurrentParams() {
-        ROS_INFO("Params: height=%.1fmm, length=%.1fmm, cycle=%.1fs, speed=x%.1f", 
+        ROS_INFO("Params: height=%.1fmm, length=%.1fmm, cycle=%.1fs, speed=x%.1f, forward=%.1fmm/s", 
                  walk_params_.step_height, walk_params_.step_length, 
-                 walk_params_.cycle_time, walk_params_.speed_multiplier);
+                 walk_params_.cycle_time, walk_params_.speed_multiplier, walk_params_.forward_speed);
+        ROS_INFO("Distance walked: %.1fmm", total_distance_walked_);
+    }
+    
+    void resetPosition() {
+        is_walking_ = false;
+        is_enabled_ = false;
+        total_distance_walked_ = 0.0;
+        
+        // ホームポジションを初期位置にリセット
+        for (auto& leg_pair : legs_) {
+            LegConfig& config = leg_pair.second;
+            config.current_x = config.home_x;
+            config.current_y = config.home_y;
+        }
+        
+        moveToHome();
+        ROS_INFO("Position RESET to origin");
     }
     
     void startWalking() {
@@ -257,14 +298,14 @@ public:
             const LegConfig& config = leg_pair.second;
             
             dual_leg_controller::LegPosition cmd;
-            cmd.x = config.home_x;
-            cmd.y = config.home_y;
+            cmd.x = config.current_x;  // 現在のホーム位置を使用
+            cmd.y = config.current_y;
             cmd.z = config.home_z;
             
             leg_pos_pubs_[leg_id].publish(cmd);
         }
         
-        ROS_INFO("Moving both legs to HOME position");
+        ROS_INFO("Moving both legs to current HOME position (%.1fmm forward)", total_distance_walked_);
     }
     
     void emergencyStop() {
@@ -278,6 +319,15 @@ public:
         current_time_ += 0.02 * walk_params_.speed_multiplier;
         
         double effective_cycle_time = walk_params_.cycle_time / walk_params_.speed_multiplier;
+        double dt = 0.02 * walk_params_.speed_multiplier;
+        double distance_increment = walk_params_.forward_speed * dt / 1000.0; // mm/s → mm
+        
+        // ホームポジションを前進方向に更新
+        for (auto& leg_pair : legs_) {
+            LegConfig& config = leg_pair.second;
+            config.current_x += distance_increment;
+        }
+        total_distance_walked_ += distance_increment;
         
         for (const auto& leg_pair : legs_) {
             const std::string& leg_id = leg_pair.first;
@@ -296,26 +346,23 @@ public:
             
             dual_leg_controller::LegPosition cmd;
             
-            // 歩行パターン：交互歩行で前進
-            // RF脚がスタンス期の時：RF脚で推進、LF脚はスイング
-            // LF脚がスタンス期の時：LF脚で推進、RF脚はスイング
-            
+            // 歩行パターン：現在のホーム位置を中心とした歩行
             if (phase < 0.5) {
                 // スタンス期（接地期）- 地面を蹴って推進
                 double stance_ratio = phase / 0.5;
                 
-                // 地面を後方に蹴る動作（ボディが前進）
-                cmd.x = config.home_x + walk_params_.step_length/2.0 - walk_params_.step_length * stance_ratio;
-                cmd.y = config.home_y;                
+                // 現在のホーム位置を中心とした前後移動
+                cmd.x = config.current_x + walk_params_.step_length/2.0 - walk_params_.step_length * stance_ratio;
+                cmd.y = config.current_y;                
                 cmd.z = config.home_z;
             } else {
                 // スイング期（遊脚期）- 前方に足を運ぶ
                 double swing_ratio = (phase - 0.5) / 0.5;
                 double swing_angle = swing_ratio * M_PI;
                 
-                // 前方に足を運ぶ動作
-                cmd.x = config.home_x - walk_params_.step_length/2.0 + walk_params_.step_length * swing_ratio;
-                cmd.y = config.home_y;                
+                // 現在のホーム位置を中心とした前後移動（空中）
+                cmd.x = config.current_x - walk_params_.step_length/2.0 + walk_params_.step_length * swing_ratio;
+                cmd.y = config.current_y;                
                 cmd.z = config.home_z + walk_params_.step_height * sin(swing_angle);
             }
             
@@ -328,9 +375,10 @@ public:
             double lf_phase = fmod(current_time_ + walk_params_.phase_offset * effective_cycle_time, 
                                  effective_cycle_time) / effective_cycle_time;
             ROS_INFO("Phases - RF: %.2f, LF: %.2f", rf_phase, lf_phase);
-            ROS_INFO("RF home: [%.1f, %.1f], LF home: [%.1f, %.1f]", 
-                     legs_["RF"].home_x, legs_["RF"].home_y,
-                     legs_["LF"].home_x, legs_["LF"].home_y);
+            ROS_INFO("Current home - RF: [%.1f, %.1f], LF: [%.1f, %.1f]", 
+                     legs_["RF"].current_x, legs_["RF"].current_y,
+                     legs_["LF"].current_x, legs_["LF"].current_y);
+            ROS_INFO("Total distance: %.1fmm", total_distance_walked_);
             
             // 歩行方向の説明
             std::string rf_state = (rf_phase < 0.5) ? "STANCE(pushing)" : "SWING(lifting)";
