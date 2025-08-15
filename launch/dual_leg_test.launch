@@ -1,0 +1,23 @@
+<!-- 2脚協調歩行テスト用launchファイル -->
+<launch>
+  <!-- パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexa_leg_params.yaml"/>
+  
+  <!-- RF脚とLF脚用のdual_leg_controllerを起動 -->
+  <node name="dual_leg_controller_test" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RF LF" output="screen">
+  </node>
+  
+  <!-- 2脚協調テストノード -->
+  <node name="safe_dual_leg_test" pkg="dual_leg_controller" 
+        type="safe_dual_leg_test_node" output="screen">
+  </node>
+  
+  <!-- 初期化チェッカー -->
+  <node name="initialization_checker" pkg="dual_leg_controller" 
+        type="check_initialization.py" output="screen">
+    <param name="wait_time" value="3.0"/>
+    <param name="target_leg" value="RF"/>
+  </node>
+
+</launch>

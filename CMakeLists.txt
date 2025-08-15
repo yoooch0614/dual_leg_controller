@@ -141,3 +141,22 @@ install(FILES
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 # 安全テスト用の実行ファイルを追加(ここまで)
+
+# 2脚協調テスト用実行ファイル(ここから)
+add_executable(safe_dual_leg_test_node 
+  src/safe_dual_leg_test.cpp
+)
+
+add_dependencies(safe_dual_leg_test_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(safe_dual_leg_test_node
+  ${catkin_LIBRARIES}
+)
+
+install(TARGETS safe_dual_leg_test_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+# 2脚協調テスト用実行ファイル(ここまで)
