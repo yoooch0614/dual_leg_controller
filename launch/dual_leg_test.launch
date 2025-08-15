@@ -10,7 +10,7 @@
   
   <!-- 2脚協調テストノード -->
   <node name="safe_dual_leg_test" pkg="dual_leg_controller" 
-        type="safe_dual_leg_test_node" output="screen">
+        type="safe_dual_leg_test_node" output="screen" launch-prefix="xterm -e">
   </node>
   
   <!-- 初期化チェッカー -->
