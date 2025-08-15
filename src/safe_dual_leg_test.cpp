@@ -45,26 +45,25 @@ public:
     SafeDualLegTest() : nh_(""), is_walking_(false), is_enabled_(false), 
                        current_time_(0.0), last_key_(0), keyboard_initialized_(false) {
         
-        // 実際の6脚ロボット配置：各脚の自然な初期位置
-        double body_radius = 95.0;  // cylinder_radius from URDF
-        double leg_reach = 45.0;    // 脚の伸び代
+        // 正しい脚配置：各脚とも前方向(X軸正方向)に足先を配置
+        // 脚の取り付け位置は異なるが、足先の方向は統一
         
-        // RF脚: 0度位置（右前）- 自然な伸び方向
+        // RF脚: 0度位置に取り付け、前方向に伸ばす
         legs_["RF"] = {
             "RF", 
-            (body_radius + leg_reach),  // X: 140mm (前方向)
-            0.0,                        // Y: 0mm 
-            -90.0, 
+            140.0,  // X: 前方向140mm
+            0.0,    // Y: 0mm 
+            -90.0,  // Z: -90mm
             true
         };
         
-        // LF脚: 60度位置（左前）- 自然な伸び方向
-        double lf_angle = 60.0 * M_PI / 180.0;
+        // LF脚: 60度位置に取り付けられているが、足先は前方向に配置
+        // （逆運動学により適切な関節角度が計算される）
         legs_["LF"] = {
             "LF",
-            (body_radius + leg_reach) ,  // X: 70mm (60度方向の自然な位置)
-            0.0,  // Y: 121mm
-            -90.0,
+            140.0,  // X: 前方向140mm（RF脚と同じ）
+            0.0,    // Y: 0mm（RF脚と同じ）
+            -90.0,  // Z: -90mm
             true
         };
         
@@ -119,6 +118,10 @@ public:
         ROS_INFO("  Height: %.1fmm, Length: %.1fmm", walk_params_.step_height, walk_params_.step_length);
         ROS_INFO("  Cycle: %.1fs, Speed: x%.1f", walk_params_.cycle_time, walk_params_.speed_multiplier);
         ROS_INFO("  Phase offset: %.1f (180 degrees)", walk_params_.phase_offset);
+        ROS_INFO("");
+        ROS_INFO("LEG CONFIGURATION:");
+        ROS_INFO("  RF leg: 0° mount, foot at (140, 0)");
+        ROS_INFO("  LF leg: 60° mount, foot at (140, 0) - IK will handle joint angles");
         ROS_INFO("");
         ROS_INFO("CONTROLS:");
         ROS_INFO("  SPACE: Start/Continue walking (hold to walk)");
@@ -293,25 +296,26 @@ public:
             
             dual_leg_controller::LegPosition cmd;
             
-            // 重要：歩行方向は全て前後方向（X軸方向）に統一
-            // 各脚のリンク構造は変えずに、足先のみ前後移動
+            // 歩行パターン：交互歩行で前進
+            // RF脚がスタンス期の時：RF脚で推進、LF脚はスイング
+            // LF脚がスタンス期の時：LF脚で推進、RF脚はスイング
             
             if (phase < 0.5) {
-                // スタンス期（接地期）- 足先が後方移動
+                // スタンス期（接地期）- 地面を蹴って推進
                 double stance_ratio = phase / 0.5;
-                double step_offset = walk_params_.step_length/2.0 - walk_params_.step_length * stance_ratio;
                 
-                cmd.x = config.home_x + step_offset;  // X方向（前後）のみ移動
-                cmd.y = config.home_y;                // Y座標は初期位置を維持
+                // 地面を後方に蹴る動作（ボディが前進）
+                cmd.x = config.home_x + walk_params_.step_length/2.0 - walk_params_.step_length * stance_ratio;
+                cmd.y = config.home_y;                
                 cmd.z = config.home_z;
             } else {
-                // スイング期（遊脚期）- 足先が前方移動
+                // スイング期（遊脚期）- 前方に足を運ぶ
                 double swing_ratio = (phase - 0.5) / 0.5;
                 double swing_angle = swing_ratio * M_PI;
-                double step_offset = -walk_params_.step_length/2.0 + walk_params_.step_length * swing_ratio;
                 
-                cmd.x = config.home_x + step_offset;  // X方向（前後）のみ移動
-                cmd.y = config.home_y;                // Y座標は初期位置を維持
+                // 前方に足を運ぶ動作
+                cmd.x = config.home_x - walk_params_.step_length/2.0 + walk_params_.step_length * swing_ratio;
+                cmd.y = config.home_y;                
                 cmd.z = config.home_z + walk_params_.step_height * sin(swing_angle);
             }
             
@@ -327,6 +331,11 @@ public:
             ROS_INFO("RF home: [%.1f, %.1f], LF home: [%.1f, %.1f]", 
                      legs_["RF"].home_x, legs_["RF"].home_y,
                      legs_["LF"].home_x, legs_["LF"].home_y);
+            
+            // 歩行方向の説明
+            std::string rf_state = (rf_phase < 0.5) ? "STANCE(pushing)" : "SWING(lifting)";
+            std::string lf_state = (lf_phase < 0.5) ? "STANCE(pushing)" : "SWING(lifting)";
+            ROS_INFO("RF: %s, LF: %s", rf_state.c_str(), lf_state.c_str());
         }
     }
 };
