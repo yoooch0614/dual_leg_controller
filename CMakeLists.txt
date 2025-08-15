@@ -100,3 +100,44 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
+
+# 安全テスト用の実行ファイルを追加 (ここから)
+# 実行ファイルの作成
+add_executable(safe_single_leg_test_node 
+  src/safe_single_leg_test.cpp
+)
+
+# 依存関係の設定
+add_dependencies(safe_single_leg_test_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+# ライブラリのリンク
+target_link_libraries(safe_single_leg_test_node
+  ${catkin_LIBRARIES}
+)
+
+# インストール設定
+install(TARGETS safe_single_leg_test_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Pythonスクリプトのインストール
+install(PROGRAMS
+  scripts/leg_safety_monitor.py
+  scripts/check_initialization.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# 設定ファイルのインストール
+install(FILES
+  config/safe_leg_test_params.yaml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+)
+
+install(FILES
+  launch/safe_single_leg_test.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+# 安全テスト用の実行ファイルを追加(ここまで)
