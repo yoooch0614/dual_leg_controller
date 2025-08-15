@@ -42,18 +42,22 @@
               /rosout">
   </node>
   
-  <!-- URDF表示（可視化用） -->
+  <!-- URDF表示（可視化用） - エラーが出る場合はコメントアウト -->
+  <!-- 
   <param name="robot_description" 
          command="$(find xacro)/xacro $(find dual_leg_controller)/model/urdf/hexa_leg.xacro"/>
   
   <node name="robot_state_publisher" pkg="robot_state_publisher" 
         type="robot_state_publisher" output="screen"/>
+  -->
   
-  <!-- RViz可視化 -->
+  <!-- RViz可視化 - 最初はURDFなしで実行 -->
+  <!--
   <group if="$(arg enable_rviz)">
     <node name="rviz" pkg="rviz" type="rviz" output="screen"
           args="-d $(find dual_leg_controller)/config/single_leg_test.rviz"/>
   </group>
+  -->
   
   <!-- 監視ノード（位置の異常値検出） -->
   <node name="leg_safety_monitor" pkg="dual_leg_controller" 

@@ -1,0 +1,30 @@
+<!-- 最小限の単脚歩行テスト用launchファイル -->
+<launch>
+  <!-- 引数定義 -->
+  <arg name="leg_id" default="RF"/>
+  
+  <!-- 基本パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexa_leg_params.yaml"/>
+  
+  <!-- 安全テスト用パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/safe_leg_test_params.yaml"/>
+  
+  <!-- RF脚用のdual_leg_controllerを起動 -->
+  <node name="dual_leg_controller_test" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RF LF" output="screen">
+  </node>
+  
+  <!-- 安全単脚テストノード -->
+  <node name="safe_single_leg_test" pkg="dual_leg_controller" 
+        type="safe_single_leg_test_node" output="screen" launch-prefix="xterm -e">
+    <param name="target_leg" value="$(arg leg_id)"/>
+  </node>
+  
+  <!-- 初期化チェッカー -->
+  <node name="initialization_checker" pkg="dual_leg_controller" 
+        type="check_initialization.py" output="screen">
+    <param name="wait_time" value="3.0"/>
+    <param name="target_leg" value="$(arg leg_id)"/>
+  </node>
+
+</launch>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name = "hexa_leg_pod" xmlns:xacro = "http://www.ros.org/wiki/xacro">
     <!-- include -->
-    <xacro:include filename="$(find multileg)/urdf/materials.xacro" />
+    <xacro:include filename="$(find dual_leg_controller)/model/urdf/materials.xacro" />
 
     <!--Setting property-->
     <xacro:property name="motor_height" value="0.02" /> <!--motorを下げる高さ[m]-->
@@ -237,43 +237,39 @@
             <child link="limb${limb_id}_foot_tip"/>
         </joint>
 
-
         <!-- トランスミッション -->
-    <transmission name="trans${limb_id}_1">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="limb${limb_id}_joint1"> 
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="motor${limb_id}_1">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-    </transmission>
+        <transmission name="trans${limb_id}_1">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="limb${limb_id}_joint1"> 
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor${limb_id}_1">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
 
-    <transmission name="trans${limb_id}_2">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="limb${limb_id}_joint2"> 
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="motor${limb_id}_2">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-    </transmission>
+        <transmission name="trans${limb_id}_2">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="limb${limb_id}_joint2"> 
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor${limb_id}_2">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
 
-    <transmission name="trans${limb_id}_3">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="limb${limb_id}_joint3"> 
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="motor${limb_id}_3">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-    </transmission>
-
-
-
+        <transmission name="trans${limb_id}_3">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="limb${limb_id}_joint3"> 
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor${limb_id}_3">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
     </xacro:macro>
     
     <joint name = "body_joint" type="fixed">
@@ -305,6 +301,7 @@
         </collision>
     </link>
 
+    <!-- 6脚のマクロ呼び出し -->
     <xacro:limb_macro limb_id="0" arc="0"/>
     <xacro:limb_macro limb_id="1" arc="60"/>
     <xacro:limb_macro limb_id="2" arc="120"/>
@@ -312,10 +309,9 @@
     <xacro:limb_macro limb_id="4" arc="240"/>
     <xacro:limb_macro limb_id="5" arc="300"/>
 
-
     <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-        <robotNamespace>/multileg</robotNamespace>
+        <robotNamespace>/hexa_leg</robotNamespace>
         </plugin>
     </gazebo>
 
