@@ -24,7 +24,7 @@
   
   <!-- 2脚相対位置歩行制御ノード -->
   <node name="two_leg_relative_walk" pkg="dual_leg_controller" 
-        type="two_leg_relative_walk_node" output="screen" launch-prefix="">
+        type="two_leg_relative_walk_node" output="screen" launch-prefix="xterm -e">
     <param name="target_leg1" value="$(arg leg1)"/>
     <param name="target_leg2" value="$(arg leg2)"/>
     
