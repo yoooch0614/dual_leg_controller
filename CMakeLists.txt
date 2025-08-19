@@ -188,3 +188,24 @@ install(DIRECTORY launch/
   FILES_MATCHING PATTERN "*.launch"
 )
 # 2脚相対位置歩行テスト用実行ファイル(ここまで)
+
+# 6脚トライポッド歩行システム
+add_executable(hexapod_tripod_controller_node 
+  src/hexapod_tripod_controller.cpp
+)
+
+add_dependencies(hexapod_tripod_controller_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(hexapod_tripod_controller_node
+  ${catkin_LIBRARIES}
+)
+
+# インストール設定
+install(TARGETS two_leg_relative_walk_node fixed_two_leg_walk_node hexapod_tripod_controller_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# 6脚トライポッド歩行システム(ここまで)
