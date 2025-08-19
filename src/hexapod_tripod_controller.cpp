@@ -91,15 +91,16 @@ public:
 
 private:
     void setupHexapodConfiguration() {
-        // 実際の脚配置に基づく設定
+        // 実際の脚配置に基づく設定（YAMLファイルの順序に合わせて修正）
         leg_names_ = {"RF", "LF", "LM", "LB", "RB", "RM"};
         
-        // 各脚の取り付け角度（図に基づく正しい配置）
-        double attach_angles[6] = {0, 300, 60, 180, 240, 120};  // 度
+        // 各脚の取り付け角度（正しい順序）
+        // YAML順序: RF(0), LF(1), LM(2), LB(3), RB(4), RM(5)
+        double attach_angles[6] = {0, 300, 240, 180, 120, 60};  // 度
         
-        // トライポッドグループ分け
-        // グループ0: RF(0), LM(2), RB(4) - 同時動作
-        // グループ1: LF(1), LB(3), RM(5) - 同時動作、グループ0と180度位相差
+        // トライポッドグループ分け（修正版）
+        // グループ0: RF(0°), LM(240°), RB(120°) - 120度間隔
+        // グループ1: LF(300°), LB(180°), RM(60°) - 120度間隔
         int tripod_groups[6] = {0, 1, 0, 1, 0, 1};
         
         for (int i = 0; i < 6; i++) {
@@ -113,9 +114,9 @@ private:
             };
         }
         
-        ROS_INFO("Hexapod Tripod Configuration:");
-        ROS_INFO("  Group 0 (同時動作): RF(0°), LM(60°), RB(240°)");
-        ROS_INFO("  Group 1 (同時動作): LF(300°), LB(180°), RM(120°)");
+        ROS_INFO("Hexapod Tripod Configuration (CORRECTED):");
+        ROS_INFO("  Group 0 (120°間隔): RF(0°), LM(240°), RB(120°)");
+        ROS_INFO("  Group 1 (120°間隔): LF(300°), LB(180°), RM(60°)");
         ROS_INFO(" ");
         for (const auto& leg_name : leg_names_) {
             const LegConfig& config = legs_[leg_name];
@@ -236,8 +237,8 @@ private:
         ROS_INFO("6脚トライポッド歩行システム");
         ROS_INFO(" ");
         ROS_INFO("Tripod Groups:");
-        ROS_INFO("  Group 0: RF(0°), LM(60°), RB(240°)");
-        ROS_INFO("  Group 1: LF(300°), LB(180°), RM(120°)");
+        ROS_INFO("  Group 0: RF(0°), LM(240°), RB(120°)");
+        ROS_INFO("  Group 1: LF(300°), LB(180°), RM(60°)");
         ROS_INFO(" ");
         ROS_INFO("CONTROLS:");
         ROS_INFO("  SPACE: Start/Stop walking");
