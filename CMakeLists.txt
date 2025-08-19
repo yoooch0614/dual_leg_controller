@@ -204,7 +204,7 @@ target_link_libraries(hexapod_tripod_controller_node
 )
 
 # インストール設定
-install(TARGETS two_leg_relative_walk_node fixed_two_leg_walk_node hexapod_tripod_controller_node
+install(TARGETS two_leg_relative_walk_node hexapod_tripod_controller_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
