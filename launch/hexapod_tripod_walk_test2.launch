@@ -66,10 +66,10 @@
     <param name="position_limit_z_max" value="-50.0"/>
     <param name="position_limit_z_min" value="-130.0"/>
   </node>
-  
+
   <!-- 方向変更対応6脚歩行システムの起動 -->
   <node name="hexapod_directional_controller" pkg="dual_leg_controller" 
-        type="hexapod_directional_controller_node" output="screen"launch-prefix="xterm -e">
+        type="hexapod_directional_controller_node" output="screen" launch-prefix="xterm -e">
   </node>
   
   
