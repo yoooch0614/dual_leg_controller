@@ -75,7 +75,7 @@ private:
         processLegFixed("RF", 0.0, 0.0);  // 0度、位相オフセット0
         
         // LF脚の処理  
-        processLegFixed("LF", 60.0, 0.5);  // 60度、位相オフセット0.5
+        processLegFixed("LF", 300.0, 0.5);  // 60度、位相オフセット0.5
     }
     
     void processLegFixed(const std::string& leg_id, double attach_angle_deg, double phase_offset) {
