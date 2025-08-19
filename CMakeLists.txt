@@ -160,3 +160,31 @@ install(TARGETS safe_dual_leg_test_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 # 2脚協調テスト用実行ファイル(ここまで)
+
+# 2脚相対位置歩行テスト用実行ファイル(ここから)
+add_executable(two_leg_relative_walk_node 
+  src/two_leg_relative_walk.cpp
+)
+
+# 依存関係の設定
+add_dependencies(two_leg_relative_walk_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+# ライブラリのリンク
+target_link_libraries(two_leg_relative_walk_node
+  ${catkin_LIBRARIES}
+)
+
+# インストール設定
+install(TARGETS two_leg_relative_walk_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# launchファイルのインストール
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING PATTERN "*.launch"
+)
+# 2脚相対位置歩行テスト用実行ファイル(ここまで)

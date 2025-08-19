@@ -1,0 +1,58 @@
+<!-- 2脚相対位置歩行テスト用launchファイル -->
+<launch>
+  <!-- 引数定義 -->
+  <arg name="leg1" default="RF"/>
+  <arg name="leg2" default="LF"/>
+  <arg name="enable_debug" default="true"/>
+  
+  <!-- パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexa_leg_params.yaml"/>
+  
+  <!-- RF脚とLF脚用のdual_leg_controllerを起動 -->
+  <node name="dual_leg_controller_rf_lf" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="$(arg leg1) $(arg leg2)" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- 初期化チェッカー（オプション） -->
+  <node name="initialization_checker" pkg="dual_leg_controller" 
+        type="check_initialization.py" output="screen" if="$(arg enable_debug)">
+    <param name="target_legs" value="$(arg leg1),$(arg leg2)"/>
+    <param name="timeout" value="10.0"/>
+  </node>
+  
+  <!-- 2脚相対位置歩行制御ノード -->
+  <node name="two_leg_relative_walk" pkg="dual_leg_controller" 
+        type="two_leg_relative_walk_node" output="screen" launch-prefix="">
+    <param name="target_leg1" value="$(arg leg1)"/>
+    <param name="target_leg2" value="$(arg leg2)"/>
+    
+    <!-- 歩行パラメータ（検証済み値） -->
+    <param name="step_height" value="17.0"/>
+    <param name="step_length" value="60.0"/>
+    <param name="cycle_time" value="1.2"/>
+    <param name="initial_forward_speed" value="20.0"/>
+    
+    <!-- 脚配置パラメータ -->
+    <param name="rf_attach_angle" value="0.0"/>
+    <param name="lf_attach_angle" value="60.0"/>
+  </node>
+  
+  <!-- 安全監視ノード（オプション） -->
+  <node name="leg_safety_monitor" pkg="dual_leg_controller" 
+        type="leg_safety_monitor.py" output="screen" if="$(arg enable_debug)">
+    <param name="monitor_legs" value="$(arg leg1),$(arg leg2)"/>
+    <param name="position_limit_x_max" value="200.0"/>
+    <param name="position_limit_x_min" value="80.0"/>
+    <param name="position_limit_z_max" value="-50.0"/>
+    <param name="position_limit_z_min" value="-130.0"/>
+  </node>
+  
+  <!-- ROSトピック状態表示（デバッグ用） -->
+  <node name="topic_monitor" pkg="dual_leg_controller" type="rostopic" 
+        args="echo /asterisk/leg/$(arg leg1)/state/foot_position" 
+        output="screen" if="$(arg enable_debug)" respawn="false">
+  </node>
+  
+</launch>
