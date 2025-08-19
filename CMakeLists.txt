@@ -209,3 +209,14 @@ install(TARGETS two_leg_relative_walk_node hexapod_tripod_controller_node
 )
 
 # 6脚トライポッド歩行システム(ここまで)
+# 方向変更対応6脚歩行システム(ここから)
+add_executable(hexapod_directional_controller_node 
+  src/hexapod_directional_controller.cpp
+)
+add_dependencies(hexapod_directional_controller_node 
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(hexapod_directional_controller_node
+  ${catkin_LIBRARIES}
+)
+# 方向変更対応6脚歩行システム(ここまで)
