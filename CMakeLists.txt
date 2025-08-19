@@ -220,3 +220,22 @@ target_link_libraries(hexapod_directional_controller_node
   ${catkin_LIBRARIES}
 )
 # 方向変更対応6脚歩行システム(ここまで)
+# 滑らかな方向変更対応6脚歩行システム（ここから）
+add_executable(smooth_hexapod_directional_controller_node 
+  src/smooth_hexapod_directional_controller.cpp
+)
+
+add_dependencies(smooth_hexapod_directional_controller_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(smooth_hexapod_directional_controller_node
+  ${catkin_LIBRARIES}
+)
+
+# インストール設定
+install(TARGETS smooth_hexapod_directional_controller_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+# 滑らかな方向変更対応6脚歩行システム（ここまで）

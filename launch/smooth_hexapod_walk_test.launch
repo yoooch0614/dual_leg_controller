@@ -1,0 +1,80 @@
+<!-- 滑らかな方向変更対応6脚歩行テスト用launchファイル -->
+<launch>
+  <!-- 引数定義 -->
+  <arg name="enable_debug" default="true"/>
+  <arg name="enable_cmd_vel" default="true"/>
+  
+  <!-- パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexa_leg_params.yaml"/>
+  
+  <!-- 6脚制御のため3つのdual_leg_controllerを起動 -->
+  <!-- USB0に接続された脚（右前と左前） -->
+  <node name="dual_leg_controller_usb0" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RF LF" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- USB1に接続された脚（左中と左後） -->
+  <node name="dual_leg_controller_usb1" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="LM LB" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- USB2に接続された脚（右後と右中） -->
+  <node name="dual_leg_controller_usb2" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RB RM" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- 滑らかな6脚方向変更歩行制御ノード -->
+  <node name="smooth_hexapod_directional_controller" pkg="dual_leg_controller" 
+        type="smooth_hexapod_directional_controller_node" output="screen" launch-prefix="xterm -e">
+    
+    <!-- 歩行パラメータ（検証済み値） -->
+    <param name="step_height" value="17.0"/>
+    <param name="step_length" value="60.0"/>
+    <param name="cycle_time" value="1.2"/>
+    <param name="initial_forward_speed" value="20.0"/>
+    
+    <!-- 滑らかな遷移パラメータ -->
+    <param name="direction_change_rate" value="90.0"/>    <!-- 度/秒 -->
+    <param name="speed_change_rate" value="50.0"/>        <!-- mm/s² -->
+    <param name="angular_change_rate" value="1.0"/>       <!-- rad/s² -->
+    
+    <!-- トライポッドグループ設定 -->
+    <rosparam param="tripod_group_0">["RF", "LM", "RB"]</rosparam>
+    <rosparam param="tripod_group_1">["LF", "LB", "RM"]</rosparam>
+    
+    <!-- 脚配置パラメータ -->
+    <rosparam param="leg_angles">[0, 300, 240, 180, 120, 60]</rosparam>
+  </node>
+  
+  <!-- cmd_vel インターフェース（オプション） -->
+  <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" 
+        type="teleop_twist_keyboard.py" output="screen" 
+        if="$(arg enable_cmd_vel)" launch-prefix="xterm -e">
+    <remap from="cmd_vel" to="/cmd_vel"/>
+    <param name="speed" value="0.02"/>        <!-- 20mm/s -->
+    <param name="turn" value="0.2"/>          <!-- 0.2rad/s -->
+  </node>
+  
+  <!-- 安全監視ノード（オプション） -->
+  <node name="hexapod_safety_monitor" pkg="dual_leg_controller" 
+        type="leg_safety_monitor.py" output="screen" if="$(arg enable_debug)">
+    <param name="monitor_legs" value="RF,LF,LM,LB,RB,RM"/>
+    <param name="position_limit_x_max" value="200.0"/>
+    <param name="position_limit_x_min" value="80.0"/>
+    <param name="position_limit_z_max" value="-50.0"/>
+    <param name="position_limit_z_min" value="-130.0"/>
+  </node>
+  
+  <!-- リアルタイム状態監視ノード -->
+  <node name="smooth_transition_monitor" pkg="dual_leg_controller" 
+        type="smooth_transition_monitor.py" output="screen" if="$(arg enable_debug)">
+    <param name="update_rate" value="10.0"/>  <!-- 10Hz で状態表示 -->
+  </node>
+  
+</launch>
