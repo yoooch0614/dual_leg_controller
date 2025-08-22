@@ -76,6 +76,11 @@
     <param name="cycle_time" value="1.2"/>
     <param name="initial_forward_speed" value="20.0"/>
     
+<!-- 滑らかな6脚方向変更歩行制御ノード -->
+<node name="smooth_hexapod_directional_controller" pkg="dual_leg_controller" 
+      type="enhanced_smooth_hexapod_controller_node" output="screen">
+
+
     <!-- さらに滑らかな遷移パラメータ -->
     <param name="direction_change_rate" value="120.0"/>   <!-- 度/秒 -->
     <param name="speed_change_rate" value="80.0"/>        <!-- mm/s² -->
