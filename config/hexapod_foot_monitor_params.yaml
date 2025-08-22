@@ -1,0 +1,142 @@
+# 6脚足先動作監視システム設定
+# config/hexapod_foot_monitor_params.yaml
+
+# 監視対象の脚
+monitored_legs: ["RF", "LF", "LM", "LB", "RB", "RM"]
+
+# 脚の色設定（可視化用）
+leg_colors:
+  RF: "red"      # 右前脚 - 赤
+  LF: "blue"     # 左前脚 - 青  
+  LM: "green"    # 左中脚 - 緑
+  LB: "orange"   # 左後脚 - オレンジ
+  RB: "purple"   # 右後脚 - 紫
+  RM: "brown"    # 右中脚 - 茶
+
+# 脚の取り付け角度（度）
+leg_attachment_angles:
+  RF: 0      # 右前脚
+  LF: 300    # 左前脚（60度）
+  LM: 240    # 左中脚
+  LB: 180    # 左後脚
+  RB: 120    # 右後脚
+  RM: 60     # 右中脚
+
+# トライポッドグループ分け
+tripod_groups:
+  group_0: ["RF", "LM", "RB"]  # グループ0
+  group_1: ["LF", "LB", "RM"]  # グループ1
+
+# 異常検出の閾値
+anomaly_detection:
+  # 位置制限 [mm]
+  position_limits:
+    x_max: 250.0      # X座標最大値
+    x_min: 50.0       # X座標最小値
+    y_max: 100.0      # Y座標最大値
+    y_min: -100.0     # Y座標最小値
+    z_max: -30.0      # Z座標最大値（地面より上）
+    z_min: -150.0     # Z座標最小値（地面より下）
+  
+  # 速度制限 [mm/s]
+  velocity_limits:
+    max_velocity: 200.0       # 最大速度
+    warning_velocity: 100.0   # 警告速度
+    
+  # ステップ制限 [mm]
+  step_limits:
+    max_step_height: 50.0     # 最大ステップ高さ
+    max_step_length: 100.0    # 最大ステップ長さ
+    
+  # 加速度制限 [mm/s²]
+  acceleration_limits:
+    max_acceleration: 500.0   # 最大加速度
+
+# データ保存設定
+data_logging:
+  trajectory_history_length: 100    # 軌道履歴の長さ
+  velocity_history_length: 50       # 速度履歴の長さ
+  auto_save_interval: 300.0         # 自動保存間隔 [秒]
+  log_directory: "/tmp/hexapod_logs" # ログ保存ディレクトリ
+
+# 可視化設定
+visualization:
+  update_rate: 10.0           # 更新頻度 [Hz]
+  show_3d_trajectory: true    # 3D軌道表示
+  show_xy_trajectory: true    # XY平面軌道表示
+  show_velocity_plot: true    # 速度プロット表示
+  show_phase_diagram: true    # 位相図表示
+  
+  # プロット範囲
+  plot_ranges:
+    x_range: [50, 250]        # X軸範囲 [mm]
+    y_range: [-100, 100]      # Y軸範囲 [mm]
+    z_range: [-150, -30]      # Z軸範囲 [mm]
+    velocity_range: [0, 250]  # 速度範囲 [mm/s]
+
+# 歩行分析設定
+gait_analysis:
+  # 位相検出設定
+  stance_z_threshold: -85.0   # スタンス期判定のZ座標閾値 [mm]
+  swing_z_threshold: -80.0    # スイング期判定のZ座標閾値 [mm]
+  
+  # 協調性評価
+  coordination_scoring:
+    perfect_tripod_bonus: 2.0      # 完璧なトライポッド歩行のボーナス
+    coordination_decay: 0.5        # 協調性スコアの減衰率
+    min_coordination_score: 0.0    # 最小協調性スコア
+    max_coordination_score: 100.0  # 最大協調性スコア
+  
+  # ステップ検出
+  step_detection:
+    min_step_height: 5.0       # 最小ステップ高さ [mm]
+    min_step_duration: 0.2     # 最小ステップ時間 [秒]
+    step_frequency_window: 5.0 # ステップ頻度計算の時間窓 [秒]
+
+# 安全監視設定
+safety_monitoring:
+  # 緊急停止条件
+  emergency_conditions:
+    max_consecutive_anomalies: 5     # 連続異常の最大数
+    critical_velocity: 300.0         # 緊急停止速度 [mm/s]
+    position_deviation_limit: 50.0   # 位置偏差限界 [mm]
+  
+  # 警告レベル
+  warning_levels:
+    level_1_velocity: 100.0    # レベル1警告速度
+    level_2_velocity: 150.0    # レベル2警告速度
+    level_3_velocity: 200.0    # レベル3警告速度
+
+# 報告設定
+reporting:
+  summary_interval: 5.0       # サマリー表示間隔 [秒]
+  detailed_log_interval: 1.0 # 詳細ログ間隔 [秒]
+  anomaly_report_immediate: true  # 異常の即座報告
+  
+  # 統計計算
+  statistics:
+    calculate_rms_velocity: true      # RMS速度計算
+    calculate_step_regularity: true   # ステップ規則性計算
+    calculate_stability_margin: true  # 安定余裕計算
+
+# 高度な分析設定
+advanced_analysis:
+  # フーリエ解析
+  frequency_analysis:
+    enable: true
+    window_size: 64           # FFT窓サイズ
+    overlap: 0.5             # オーバーラップ率
+    
+  # 軌道平滑化
+  trajectory_smoothing:
+    enable: true
+    filter_type: "butterworth"  # フィルタタイプ
+    cutoff_frequency: 5.0      # カットオフ周波数 [Hz]
+    filter_order: 2            # フィルタ次数
+
+# デバッグ設定
+debug:
+  verbose_logging: false     # 詳細ログ出力
+  save_raw_data: false      # 生データ保存
+  plot_debug_info: false    # デバッグ情報をプロット
+  performance_monitoring: true  # パフォーマンス監視
