@@ -1,0 +1,107 @@
+<!-- ジョイスティック制御対応の滑らかな6脚歩行テスト用launchファイル -->
+<launch>
+  <!-- 引数定義 -->
+  <arg name="enable_debug" default="true"/>
+  <arg name="joystick_device" default="/dev/input/js0"/>
+  
+  <!-- パラメータ読み込み -->
+  <rosparam command="load" file="$(find dual_leg_controller)/config/hexa_leg_params.yaml"/>
+  
+  <!-- 6脚制御のため3つのdual_leg_controllerを起動 -->
+  <!-- USB0に接続された脚（右前と左前） -->
+  <node name="dual_leg_controller_usb0" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RF LF" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- USB1に接続された脚（左中と左後） -->
+  <node name="dual_leg_controller_usb1" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="LM LB" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- USB2に接続された脚（右後と右中） -->
+  <node name="dual_leg_controller_usb2" pkg="dual_leg_controller" 
+        type="dual_leg_controller_node" args="RB RM" 
+        output="screen" respawn="false">
+    <rosparam param="debug_mode" subst_value="true">$(arg enable_debug)</rosparam>
+  </node>
+  
+  <!-- ジョイスティックドライバ -->
+  <node name="joy_node" pkg="joy" type="joy_node" output="screen">
+    <param name="dev" value="$(arg joystick_device)"/>
+    <param name="deadzone" value="0.0"/>  <!-- デッドゾーンはカスタムノードで処理 -->
+    <param name="autorepeat_rate" value="50"/>  <!-- 50Hz -->
+  </node>
+  
+  <!-- ジョイスティック入力処理ノード -->
+  <node name="hexapod_joystick_controller" pkg="dual_leg_controller" 
+        type="hexapod_joystick_controller_node" output="screen">
+    
+    <!-- ジョイスティック設定 -->
+    <param name="deadzone_radius" value="0.1"/>      <!-- ドリフト防止デッドゾーン -->
+    <param name="max_linear_speed" value="80.0"/>    <!-- 最大直進速度 mm/s -->
+    <param name="max_angular_speed" value="1.0"/>    <!-- 最大回転速度 rad/s -->
+    
+    <!-- ボタンマッピング（PS4/Xbox互換） -->
+    <param name="enable_button" value="4"/>          <!-- L1/LB ボタン -->
+    <param name="emergency_stop_button" value="5"/>  <!-- R1/RB ボタン -->
+    <param name="home_button" value="8"/>            <!-- Start ボタン -->
+    
+    <!-- 軸マッピング -->
+    <param name="linear_x_axis" value="1"/>          <!-- 左スティック縦 -->
+    <param name="linear_y_axis" value="0"/>          <!-- 左スティック横 -->
+    <param name="angular_z_axis" value="3"/>         <!-- 右スティック横 -->
+    
+    <!-- 軸の反転設定 -->
+    <param name="invert_linear_x" value="true"/>     <!-- 前進を正に -->
+    <param name="invert_linear_y" value="false"/>
+    <param name="invert_angular_z" value="false"/>
+    
+    <!-- スムーズな遷移パラメータ -->
+    <param name="acceleration_limit" value="200.0"/> <!-- mm/s² -->
+    <param name="angular_acceleration_limit" value="2.0"/> <!-- rad/s² -->
+    <param name="update_rate" value="50.0"/>         <!-- 50Hz -->
+  </node>
+  
+  <!-- 滑らかな6脚方向変更歩行制御ノード -->
+  <node name="smooth_hexapod_directional_controller" pkg="dual_leg_controller" 
+        type="smooth_hexapod_directional_controller_node" output="screen">
+    
+    <!-- 歩行パラメータ（検証済み値） -->
+    <param name="step_height" value="17.0"/>
+    <param name="step_length" value="60.0"/>
+    <param name="cycle_time" value="1.2"/>
+    <param name="initial_forward_speed" value="20.0"/>
+    
+    <!-- さらに滑らかな遷移パラメータ -->
+    <param name="direction_change_rate" value="120.0"/>   <!-- 度/秒 -->
+    <param name="speed_change_rate" value="80.0"/>        <!-- mm/s² -->
+    <param name="angular_change_rate" value="1.5"/>       <!-- rad/s² -->
+    
+    <!-- トライポッドグループ設定 -->
+    <rosparam param="tripod_group_0">["RF", "LM", "RB"]</rosparam>
+    <rosparam param="tripod_group_1">["LF", "LB", "RM"]</rosparam>
+    
+    <!-- 脚配置パラメータ -->
+    <rosparam param="leg_angles">[0, 300, 240, 180, 120, 60]</rosparam>
+    
+    <!-- 動作中断と再開機能 -->
+    <param name="allow_gait_interruption" value="true"/>
+    <param name="min_step_completion" value="0.3"/>      <!-- 最小ステップ完了率 -->
+  </node>
+  
+  <!-- 安全監視ノード -->
+  <node name="hexapod_safety_monitor" pkg="dual_leg_controller" 
+        type="leg_safety_monitor.py" output="screen" if="$(arg enable_debug)">
+    <param name="monitor_legs" value="RF,LF,LM,LB,RB,RM"/>
+    <param name="position_limit_x_max" value="200.0"/>
+    <param name="position_limit_x_min" value="80.0"/>
+    <param name="position_limit_z_max" value="-50.0"/>
+    <param name="position_limit_z_min" value="-130.0"/>
+    <param name="emergency_stop_enabled" value="true"/>
+  </node>
+  
+</launch>

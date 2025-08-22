@@ -264,3 +264,51 @@ install(DIRECTORY templates/
   FILES_MATCHING PATTERN "*.html"
 )
 # 6脚足先監視システム(ここまで)
+# ジョイスティック制御ノード(ここから)
+add_executable(hexapod_joystick_controller_node 
+  src/hexapod_joystick_controller.cpp
+)
+
+add_dependencies(hexapod_joystick_controller_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(hexapod_joystick_controller_node
+  ${catkin_LIBRARIES}
+)
+
+# 強化版スムーズ歩行制御ノード
+add_executable(enhanced_smooth_hexapod_controller_node 
+  src/enhanced_smooth_hexapod_controller.cpp
+)
+
+add_dependencies(enhanced_smooth_hexapod_controller_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(enhanced_smooth_hexapod_controller_node
+  ${catkin_LIBRARIES}
+)
+
+# インストール設定
+install(TARGETS 
+  hexapod_joystick_controller_node
+  enhanced_smooth_hexapod_controller_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Pythonスクリプトのインストール
+install(PROGRAMS
+  scripts/joystick_status_display.py
+  scripts/smooth_transition_monitor.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# launchファイルのインストール
+install(FILES
+  launch/smooth_hexapod_joystick_walk.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+# ジョイスティック制御ノード(ここまで)
