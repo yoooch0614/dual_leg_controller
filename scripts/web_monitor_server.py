@@ -186,7 +186,7 @@ class WebMonitorServer:
     def run(self):
         """サーバー実行"""
         host = rospy.get_param('~host', '0.0.0.0')
-        port = rospy.get_param('~port', 8080)
+        port = rospy.get_param('~port', 8081)
         debug = rospy.get_param('~debug', False)
         
         rospy.loginfo(f"Starting web monitor server on {host}:{port}")
