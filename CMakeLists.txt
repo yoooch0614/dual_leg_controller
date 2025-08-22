@@ -239,3 +239,28 @@ install(TARGETS smooth_hexapod_directional_controller_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 # 滑らかな方向変更対応6脚歩行システム（ここまで）
+
+# 6脚足先監視システム(ここから)
+install(PROGRAMS
+  scripts/hexapod_foot_monitor.py
+  scripts/gait_pattern_analyzer.py
+  scripts/web_monitor_server.py
+  scripts/start_foot_monitor.sh
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(FILES
+  config/hexapod_foot_monitor_params.yaml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+)
+
+install(FILES
+  launch/hexapod_foot_monitor.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(DIRECTORY templates/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/templates
+  FILES_MATCHING PATTERN "*.html"
+)
+# 6脚足先監視システム(ここまで)
