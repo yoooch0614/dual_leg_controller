@@ -36,9 +36,9 @@
     <param name="autorepeat_rate" value="50"/>  <!-- 50Hz -->
   </node>
   
-  <!-- 強化版ジョイスティック入力処理ノード（待機時静止＋パラメータ調整対応） -->
-  <node name="enhanced_hexapod_joystick_controller" pkg="dual_leg_controller" 
-        type="enhanced_hexapod_joystick_controller_node" output="screen">
+  <!-- 既存のジョイスティック入力処理ノード（動作確認済み） -->
+  <node name="hexapod_joystick_controller" pkg="dual_leg_controller" 
+        type="hexapod_joystick_controller_node" output="screen">
     
     <!-- ジョイスティック設定 -->
     <param name="deadzone_radius" value="0.1"/>      <!-- ドリフト防止デッドゾーン -->
@@ -49,9 +49,6 @@
     <param name="enable_button" value="4"/>          <!-- L1/LB: 有効化/無効化 -->
     <param name="emergency_stop_button" value="5"/>  <!-- R1/RB: 緊急停止 -->
     <param name="home_button" value="8"/>            <!-- Start: ホームポジション -->
-    <param name="param_mode_button" value="9"/>      <!-- Select/Back: パラメータモード切替 -->
-    <param name="param_up_button" value="3"/>        <!-- Y/Triangle: パラメータ増加 -->
-    <param name="param_down_button" value="0"/>      <!-- A/X: パラメータ減少 -->
     
     <!-- 軸マッピング -->
     <param name="linear_x_axis" value="1"/>          <!-- 左スティック縦 -->
@@ -67,12 +64,33 @@
     <param name="acceleration_limit" value="200.0"/> <!-- mm/s² -->
     <param name="angular_acceleration_limit" value="2.0"/> <!-- rad/s² -->
     <param name="update_rate" value="50.0"/>         <!-- 50Hz -->
+  </node>
+  
+  <!-- パラメータ調整用ノード（新規追加） -->
+  <node name="hexapod_parameter_adjuster" pkg="dual_leg_controller" 
+        type="hexapod_parameter_adjuster.py" output="screen">
     
-    <!-- 歩行パラメータ初期値 -->
-    <param name="step_height" value="17.0"/>         <!-- ステップ高さ mm -->
-    <param name="step_length" value="60.0"/>         <!-- ステップ長さ mm -->
-    <param name="cycle_time" value="1.2"/>           <!-- サイクル時間 s -->
-    <param name="max_speed" value="80.0"/>           <!-- 最大速度 mm/s -->
+    <!-- パラメータ調整ボタンマッピング -->
+    <param name="param_mode_button" value="9"/>      <!-- Select/Back: パラメータモード切替 -->
+    <param name="param_up_button" value="3"/>        <!-- Y/Triangle: パラメータ増加 -->
+    <param name="param_down_button" value="0"/>      <!-- A/X: パラメータ減少 -->
+    
+    <!-- 調整可能パラメータの範囲 -->
+    <param name="step_height_min" value="5.0"/>
+    <param name="step_height_max" value="30.0"/>
+    <param name="step_height_step" value="2.0"/>
+    
+    <param name="step_length_min" value="20.0"/>
+    <param name="step_length_max" value="100.0"/>
+    <param name="step_length_step" value="5.0"/>
+    
+    <param name="cycle_time_min" value="0.6"/>
+    <param name="cycle_time_max" value="2.5"/>
+    <param name="cycle_time_step" value="0.1"/>
+    
+    <param name="max_speed_min" value="10.0"/>
+    <param name="max_speed_max" value="150.0"/>
+    <param name="max_speed_step" value="10.0"/>
   </node>
   
   <!-- 強化版滑らかな6脚歩行制御ノード（待機時静止対応） -->
@@ -101,23 +119,18 @@
     <param name="allow_gait_interruption" value="true"/>
     <param name="min_step_completion" value="0.3"/>      <!-- 最小ステップ完了率 -->
     
-    <!-- 待機時静止機能 -->
+    <!-- 待機時静止機能（重要な追加機能） -->
     <param name="stop_when_idle" value="true"/>          <!-- 待機時は完全停止 -->
     <param name="idle_timeout" value="1.0"/>             <!-- 1秒で待機状態と判定 -->
     <param name="force_home_when_stopped" value="true"/> <!-- 停止時はホームポジション強制 -->
+    <param name="zero_velocity_threshold" value="0.001"/> <!-- 静止判定の閾値 -->
   </node>
   
-  <!-- パラメータ調整状態表示ノード -->
-  <node name="hexapod_parameter_display" pkg="dual_leg_controller" 
-        type="hexapod_parameter_display_node" output="screen" if="$(arg enable_debug)">
-    <param name="display_rate" value="2.0"/>  <!-- 2秒間隔で表示 -->
-  </node>
-  
-  <!-- ジョイスティック状態表示ノード（強化版） -->
-  <node name="enhanced_joystick_status_display" pkg="dual_leg_controller" 
-        type="enhanced_joystick_status_display.py" output="screen" if="$(arg enable_debug)">
+  <!-- ジョイスティック状態表示ノード（元のもの） -->
+  <node name="joystick_status_display" pkg="dual_leg_controller" 
+        type="joystick_status_display.py" output="screen" if="$(arg enable_debug)">
     <param name="display_rate" value="3.0"/>  <!-- 3秒間隔で表示 -->
-    <param name="show_parameter_hints" value="true"/>  <!-- パラメータ調整のヒントを表示 -->
+    <param name="clear_screen" value="false"/>
   </node>
   
   <!-- 安全監視ノード -->
@@ -129,15 +142,6 @@
     <param name="position_limit_z_max" value="-50.0"/>
     <param name="position_limit_z_min" value="-130.0"/>
     <param name="emergency_stop_enabled" value="true"/>
-    <param name="idle_position_check" value="true"/>     <!-- 待機位置チェック -->
-  </node>
-  
-  <!-- 歩行状態監視ノード -->
-  <node name="hexapod_motion_monitor" pkg="dual_leg_controller" 
-        type="hexapod_motion_monitor.py" output="screen" if="$(arg enable_debug)">
-    <param name="monitor_topics" value="/cmd_vel,/hexapod/enable"/>
-    <param name="idle_detection_threshold" value="0.001"/>  <!-- 静止判定閾値 -->
-    <param name="idle_timeout" value="2.0"/>                <!-- 静止タイムアウト -->
   </node>
   
 </launch>
