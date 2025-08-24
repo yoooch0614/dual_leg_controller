@@ -68,7 +68,7 @@
   
   <!-- 滑らかな6脚方向変更歩行制御ノード -->
   <node name="smooth_hexapod_directional_controller" pkg="dual_leg_controller" 
-        type="enhanced_smooth_hexapod_controller_node" output="screen">
+        type="hexapod_tripod_controller_node" output="screen">
     
     <!-- 歩行パラメータ（検証済み値） -->
     <param name="step_height" value="17.0"/>
