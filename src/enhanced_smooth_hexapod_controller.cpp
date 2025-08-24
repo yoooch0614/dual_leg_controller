@@ -377,46 +377,40 @@ private:
         bool is_swing = phase < (1.0 - walk_params_.stance_time_ratio);
         config.is_swing_phase = is_swing;
         
+        // ロボット移動方向のステップ計算
+        double step_distance = smooth_transition_.current_speed * walk_params_.cycle_time;
+        double robot_step_x = step_distance * cos(smooth_transition_.current_direction * M_PI / 180.0);
+        double robot_step_y = step_distance * sin(smooth_transition_.current_direction * M_PI / 180.0);
+        
+        // 回転による移動量計算
+        double angular_step = smooth_transition_.current_angular * walk_params_.cycle_time;
+        double leg_radius = sqrt(config.home_x * config.home_x + config.home_y * config.home_y);
+        double rotation_step_x = -leg_radius * sin(config.attach_angle * M_PI / 180.0) * angular_step;
+        double rotation_step_y = leg_radius * cos(config.attach_angle * M_PI / 180.0) * angular_step;
+        
+        // 合計ステップ量（全ての脚が同じ方向に移動）
+        double total_step_x = robot_step_x + rotation_step_x;
+        double total_step_y = robot_step_y + rotation_step_y;
+        
         if (is_swing) {
-            // スイング期：足を持ち上げて前進
+            // スイング期：足を持ち上げて前方に移動
             double swing_progress = phase / (1.0 - walk_params_.stance_time_ratio);
             
-            // 軌道計算
-            double step_distance = smooth_transition_.current_speed * walk_params_.cycle_time;
-            double step_x = step_distance * cos(smooth_transition_.current_direction * M_PI / 180.0);
-            double step_y = step_distance * sin(smooth_transition_.current_direction * M_PI / 180.0);
-            
-            // 回転成分を追加
-            double angular_step = smooth_transition_.current_angular * walk_params_.cycle_time;
-            double leg_radius = sqrt(config.home_x * config.home_x + config.home_y * config.home_y);
-            double angular_x = -leg_radius * sin(config.attach_angle * M_PI / 180.0) * angular_step;
-            double angular_y = leg_radius * cos(config.attach_angle * M_PI / 180.0) * angular_step;
-            
-            // X, Y位置（放物線軌道）
-            x = config.home_x + (step_x + angular_x) * (swing_progress - 0.5);
-            y = config.home_y + (step_y + angular_y) * (swing_progress - 0.5);
+            // X, Y位置（前方向への移動）
+            x = config.home_x + total_step_x * (swing_progress - 0.5);
+            y = config.home_y + total_step_y * (swing_progress - 0.5);
             
             // Z位置（放物線軌道で持ち上げ）
             double lift_height = walk_params_.step_height * 4.0 * swing_progress * (1.0 - swing_progress);
             z = config.home_z + lift_height;
             
         } else {
-            // スタンス期：地面に接地して推進
+            // スタンス期：地面を蹴って推進力を生成
             double stance_progress = (phase - (1.0 - walk_params_.stance_time_ratio)) / walk_params_.stance_time_ratio;
             
-            // 地面を蹴って後方に移動
-            double step_distance = smooth_transition_.current_speed * walk_params_.cycle_time;
-            double step_x = step_distance * cos(smooth_transition_.current_direction * M_PI / 180.0);
-            double step_y = step_distance * sin(smooth_transition_.current_direction * M_PI / 180.0);
-            
-            // 回転成分
-            double angular_step = smooth_transition_.current_angular * walk_params_.cycle_time;
-            double leg_radius = sqrt(config.home_x * config.home_x + config.home_y * config.home_y);
-            double angular_x = -leg_radius * sin(config.attach_angle * M_PI / 180.0) * angular_step;
-            double angular_y = leg_radius * cos(config.attach_angle * M_PI / 180.0) * angular_step;
-            
-            x = config.home_x + (step_x + angular_x) * (0.5 - stance_progress);
-            y = config.home_y + (step_y + angular_y) * (0.5 - stance_progress);
+            // 後方向に蹴る動作（推進力を生成）
+            x = config.home_x + total_step_x * (0.5 - stance_progress);
+            y = config.home_y + total_step_y * (0.5 - stance_progress);
             z = config.home_z; // 地面に接地
         }
     }
