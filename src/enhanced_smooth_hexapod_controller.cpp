@@ -43,6 +43,13 @@ private:
         double angular_change_rate;    // 角速度変更レート（rad/s²）
     };
     
+    // ロボット制御指令（hexapod_tripod_controller互換）
+    struct RobotCommand {
+        double velocity_x = 0.0;  // mm/s
+        double velocity_y = 0.0;  // mm/s
+        double angular_z = 0.0;   // rad/s
+    } robot_cmd_;
+    
     ros::NodeHandle nh_;
     std::map<std::string, ros::Publisher> leg_pos_pubs_;
     ros::Subscriber cmd_vel_sub_;
@@ -110,7 +117,7 @@ private:
         nh_.param("step_height", walk_params_.step_height, 17.0);
         nh_.param("step_length", walk_params_.step_length, 60.0);
         nh_.param("cycle_time", walk_params_.cycle_time, 1.2);
-        nh_.param("stance_time_ratio", walk_params_.stance_time_ratio, 0.6);
+        nh_.param("stance_time_ratio", walk_params_.stance_time_ratio, 0.5);  // hexapod_tripod_controllerと同じ
         
         // スムーズ遷移パラメータ
         nh_.param("direction_change_rate", smooth_transition_.direction_change_rate, 120.0);
@@ -138,9 +145,10 @@ private:
     }
     
     void setupHexapodConfiguration() {
+        // hexapod_tripod_controllerと同じ設定
         leg_names_ = {"RF", "LF", "LM", "LB", "RB", "RM"};
         
-        // 各脚の設定（実際の配置に基づく）
+        // 各脚の設定（hexapod_tripod_controllerと同じ）
         double attach_angles[6] = {0, 300, 240, 180, 120, 60};  // 度
         int tripod_groups[6] = {0, 1, 0, 1, 0, 1};
         
@@ -150,7 +158,7 @@ private:
             config.attach_angle = attach_angles[i];
             config.tripod_group = tripod_groups[i];
             
-            // ホームポジション設定
+            // ホームポジション設定（hexapod_tripod_controllerと同じ）
             config.home_x = 140.0;
             config.home_y = 0.0;
             config.home_z = -90.0;
@@ -170,6 +178,8 @@ private:
         }
         
         ROS_INFO("Hexapod configuration completed - 6 legs in 2 tripod groups");
+        ROS_INFO("  Group 0: RF(0°), LM(240°), RB(120°)");
+        ROS_INFO("  Group 1: LF(300°), LB(180°), RM(60°)");
     }
     
     void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg) {
@@ -321,6 +331,11 @@ private:
         } else {
             smooth_transition_.current_angular = smooth_transition_.target_angular;
         }
+        
+        // robot_cmd_を更新（hexapod_tripod_controller互換）
+        robot_cmd_.velocity_x = smooth_transition_.current_speed * cos(smooth_transition_.current_direction * M_PI / 180.0);
+        robot_cmd_.velocity_y = smooth_transition_.current_speed * sin(smooth_transition_.current_direction * M_PI / 180.0);
+        robot_cmd_.angular_z = smooth_transition_.current_angular;
     }
     
     void updateWalkingGait() {
@@ -330,19 +345,9 @@ private:
             // 各脚の位相計算（トライポッドグループ考慮）
             double phase = fmod(current_time_ / walk_params_.cycle_time + config.phase_offset, 1.0);
             
-            // 歩行中断と再開の処理
-            bool can_change_direction = true;
-            if (allow_gait_interruption_) {
-                // 最小ステップ完了率をチェック
-                double step_completion = fmod(phase, 1.0);
-                if (step_completion < min_step_completion_ && config.was_walking) {
-                    can_change_direction = false;
-                }
-            }
-            
-            // 足先位置計算
+            // 足先位置計算（hexapod_tripod_controllerのロジックを使用）
             double x, y, z;
-            calculateLegPosition(config, phase, can_change_direction, x, y, z);
+            calculateLegPositionTripod(config, phase, x, y, z);
             
             // 位置コマンド送信
             dual_leg_controller::LegPosition cmd;
@@ -370,49 +375,67 @@ private:
         }
     }
     
-    void calculateLegPosition(LegConfig& config, double phase, bool can_change_direction,
-                             double& x, double& y, double& z) {
+    void calculateLegPositionTripod(const LegConfig& config, double phase, 
+                                   double& x, double& y, double& z) {
+        // hexapod_tripod_controllerの足先計算ロジックを移植
         
-        // スイング期とスタンス期の判定
-        bool is_swing = phase < (1.0 - walk_params_.stance_time_ratio);
-        config.is_swing_phase = is_swing;
+        // ロボット座標系の移動量を脚座標系に変換
+        double angle_rad = config.attach_angle * M_PI / 180.0;
         
-        // ロボット移動方向のステップ計算
-        double step_distance = smooth_transition_.current_speed * walk_params_.cycle_time;
-        double robot_step_x = step_distance * cos(smooth_transition_.current_direction * M_PI / 180.0);
-        double robot_step_y = step_distance * sin(smooth_transition_.current_direction * M_PI / 180.0);
+        // 座標変換：ロボット座標系 → 脚座標系
+        double leg_velocity_x =  robot_cmd_.velocity_x * cos(angle_rad) + 
+                                robot_cmd_.velocity_y * sin(angle_rad);
+        double leg_velocity_y = -robot_cmd_.velocity_x * sin(angle_rad) + 
+                                robot_cmd_.velocity_y * cos(angle_rad);
         
-        // 回転による移動量計算
-        double angular_step = smooth_transition_.current_angular * walk_params_.cycle_time;
-        double leg_radius = sqrt(config.home_x * config.home_x + config.home_y * config.home_y);
-        double rotation_step_x = -leg_radius * sin(config.attach_angle * M_PI / 180.0) * angular_step;
-        double rotation_step_y = leg_radius * cos(config.attach_angle * M_PI / 180.0) * angular_step;
+        // 回転成分の追加（ロボット中心からの距離を95mmと仮定）
+        double body_radius = 95.0;  // mm
+        double rotation_velocity_x = -robot_cmd_.angular_z * body_radius * sin(angle_rad);
+        double rotation_velocity_y =  robot_cmd_.angular_z * body_radius * cos(angle_rad);
         
-        // 合計ステップ量（全ての脚が同じ方向に移動）
-        double total_step_x = robot_step_x + rotation_step_x;
-        double total_step_y = robot_step_y + rotation_step_y;
+        // 合成速度
+        leg_velocity_x += rotation_velocity_x;
+        leg_velocity_y += rotation_velocity_y;
         
-        if (is_swing) {
-            // スイング期：足を持ち上げて前方に移動
-            double swing_progress = phase / (1.0 - walk_params_.stance_time_ratio);
-            
-            // X, Y位置（前方向への移動）
-            x = config.home_x + total_step_x * (swing_progress - 0.5);
-            y = config.home_y + total_step_y * (swing_progress - 0.5);
-            
-            // Z位置（放物線軌道で持ち上げ）
-            double lift_height = walk_params_.step_height * 4.0 * swing_progress * (1.0 - swing_progress);
-            z = config.home_z + lift_height;
-            
+        // ステップ幅計算（固定長さベース）
+        double velocity_magnitude = sqrt(leg_velocity_x * leg_velocity_x + leg_velocity_y * leg_velocity_y);
+        double leg_step_x, leg_step_y;
+        
+        if (velocity_magnitude > 0.1) {
+            // 方向は保持、大きさを step_length に設定
+            leg_step_x = (leg_velocity_x / velocity_magnitude) * walk_params_.step_length;
+            leg_step_y = (leg_velocity_y / velocity_magnitude) * walk_params_.step_length;
         } else {
-            // スタンス期：地面を蹴って推進力を生成
-            double stance_progress = (phase - (1.0 - walk_params_.stance_time_ratio)) / walk_params_.stance_time_ratio;
-            
-            // 後方向に蹴る動作（推進力を生成）
-            x = config.home_x + total_step_x * (0.5 - stance_progress);
-            y = config.home_y + total_step_y * (0.5 - stance_progress);
-            z = config.home_z; // 地面に接地
+            // 停止時
+            leg_step_x = 0.0;
+            leg_step_y = 0.0;
         }
+        
+        // スイング/スタンス期の計算（hexapod_tripod_controllerと同じ）
+        bool is_swing_phase = (phase < 0.5);
+        double step_progress, x_offset, y_offset, z_offset;
+        
+        if (is_swing_phase) {
+            // スイング期：前方移動（空中）
+            step_progress = phase * 2.0;  // 0→1
+            x_offset = -leg_step_x * 0.5 + leg_step_x * step_progress;
+            y_offset = -leg_step_y * 0.5 + leg_step_y * step_progress;
+            
+            // 放物線軌道でスイング
+            double swing_height = 4.0 * walk_params_.step_height * step_progress * (1.0 - step_progress);
+            z_offset = swing_height;
+        } else {
+            // スタンス期：後方移動（地面接触でロボットを押す）
+            step_progress = (phase - 0.5) * 2.0;  // 0→1
+            x_offset = leg_step_x * 0.5 - leg_step_x * step_progress;
+            y_offset = leg_step_y * 0.5 - leg_step_y * step_progress;
+            z_offset = 0.0;
+        }
+        
+        // 最終的な足先位置（脚座標系）
+        x = config.home_x + x_offset;
+        y = config.home_y + y_offset;
+        z = config.home_z + z_offset;
     }
     
     void moveToHome() {
@@ -448,7 +471,7 @@ private:
         ROS_INFO("");
         ROS_INFO("FEATURES:");
         ROS_INFO("  ✓ ジョイスティック制御対応");
-        ROS_INFO("  ✓ 歩行中のスムーズな方向変更");
+        ROS_INFO("  ✓ 実績ある足先計算ロジック使用");
         ROS_INFO("  ✓ 速度・方向・回転の滑らかな遷移");
         ROS_INFO("  ✓ 歩行中断・再開機能");
         ROS_INFO("  ✓ 緊急停止・安全機能");
