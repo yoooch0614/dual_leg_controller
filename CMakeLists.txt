@@ -214,10 +214,10 @@ add_executable(hexapod_directional_controller_node
   src/hexapod_directional_controller.cpp
 )
 add_dependencies(hexapod_directional_controller_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(hexapod_directional_controller_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${catkin_LIBRARIES}
 )
 # 方向変更対応6脚歩行システム(ここまで)
